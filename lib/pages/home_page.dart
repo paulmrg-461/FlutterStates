@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:states/models/user.dart';
+import 'package:states/pages/services/user_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -8,7 +10,18 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('HomePage'),
       ),
-      body: UserInfo(),
+      body: StreamBuilder(
+        stream: userService.userStream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          return snapshot.hasData
+              ? UserInfo(
+                  user: snapshot.data,
+                )
+              : Center(
+                  child: Text('No user data'),
+                );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.navigation_outlined),
           onPressed: () => Navigator.pushNamed(context, 'other')),
@@ -17,8 +30,10 @@ class HomePage extends StatelessWidget {
 }
 
 class UserInfo extends StatelessWidget {
+  final User? user;
   const UserInfo({
     Key? key,
+    @required this.user,
   }) : super(key: key);
 
   @override
@@ -36,10 +51,10 @@ class UserInfo extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            title: Text('Name: '),
+            title: Text('Name: ${user!.name!}'),
           ),
           ListTile(
-            title: Text('Age: '),
+            title: Text('Age: ${user!.age!}'),
           ),
           Text(
             'Occupations',
