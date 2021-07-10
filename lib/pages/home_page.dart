@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:states/models/user.dart';
+import 'package:states/services/user_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final UserService userService = Provider.of<UserService>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HomePage'),
+        title: const Text('User Information'),
+        actions: [
+          IconButton(
+              onPressed: () => userService.removeUser(),
+              icon: const Icon(Icons.restore))
+        ],
       ),
-      body: UserInfo(),
+      body: userService.existUser
+          ? UserInfo(
+              user: userService.user,
+            )
+          : const Center(child: Text('User information doesn\'t exist')),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.navigation_outlined),
           onPressed: () => Navigator.pushNamed(context, 'other')),
@@ -17,8 +30,10 @@ class HomePage extends StatelessWidget {
 }
 
 class UserInfo extends StatelessWidget {
+  final User? user;
   const UserInfo({
     Key? key,
+    @required this.user,
   }) : super(key: key);
 
   @override
@@ -30,31 +45,27 @@ class UserInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'General',
             style: TextStyle(fontSize: 18),
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            title: Text('Name: '),
+            title: Text('Name: ${user!.name}'),
           ),
           ListTile(
-            title: Text('Age: '),
+            title: Text('Age: ${user!.age}'),
           ),
-          Text(
+          const Text(
             'Occupations',
             style: TextStyle(fontSize: 18),
           ),
-          Divider(),
-          ListTile(
-            title: Text('Occupation 1: '),
-          ),
-          ListTile(
-            title: Text('Occupation 2: '),
-          ),
-          ListTile(
-            title: Text('Occupation 3: '),
-          ),
+          const Divider(),
+          ...user!.occupations!
+              .map((occupation) => ListTile(
+                    title: Text(occupation),
+                  ))
+              .toList(),
         ],
       ),
     );
