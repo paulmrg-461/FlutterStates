@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:states/bloc/user/user_cubit.dart';
+import 'package:states/models/user.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final userCubit = context.read<UserCubit>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('HomePage'),
+        actions: [
+          IconButton(
+              onPressed: () => userCubit.deletUser(),
+              icon: const Icon(Icons.delete))
+        ],
       ),
-      body: UserInfo(),
+      body: const ScaffoldBody(),
       floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.navigation_outlined),
           onPressed: () => Navigator.pushNamed(context, 'other')),
@@ -16,9 +25,39 @@ class HomePage extends StatelessWidget {
   }
 }
 
+class ScaffoldBody extends StatelessWidget {
+  const ScaffoldBody({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<UserCubit, UserState>(builder: (_, state) {
+      switch (state.runtimeType) {
+        case UserInitial:
+          return const Center(child: Text('User information doesn\'t exist.'));
+        case SelectedUser:
+          return UserInfo(user: (state as SelectedUser).user);
+        default:
+          return const Text('State Error');
+      }
+      // if (state is UserInitial) {
+      //   return const Center(child: Text('User information doesn\'t exist.'));
+      // } else if (state is SelectedUser) {
+      //   return UserInfo(user: state.user);
+      // } else {
+      //   return const Text('State Error');
+      // }
+    });
+  }
+}
+
 class UserInfo extends StatelessWidget {
+  final User? user;
+
   const UserInfo({
     Key? key,
+    this.user,
   }) : super(key: key);
 
   @override
@@ -30,31 +69,25 @@ class UserInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'General',
             style: TextStyle(fontSize: 18),
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            title: Text('Name: '),
+            title: Text(user!.name!),
           ),
           ListTile(
-            title: Text('Age: '),
+            title: Text('${user!.age!}'),
           ),
-          Text(
+          const Text(
             'Occupations',
             style: TextStyle(fontSize: 18),
           ),
-          Divider(),
-          ListTile(
-            title: Text('Occupation 1: '),
-          ),
-          ListTile(
-            title: Text('Occupation 2: '),
-          ),
-          ListTile(
-            title: Text('Occupation 3: '),
-          ),
+          const Divider(),
+          ...user!.occupations!
+              .map((occupation) => ListTile(title: Text(occupation)))
+              .toList(),
         ],
       ),
     );
